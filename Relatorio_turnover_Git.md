@@ -58,10 +58,10 @@ ambientar à base de dados tunover. Com isso, faremos testes que
 identificam a influência entre as variáveis de acordo com o nosso
 objetivo.
 
-#### Teste de correlação
+#### Análise de correlação
 
-Este teste será para anaisar a correlação entre variáveis quantitativas,
-duas a duas. Trata-se de um método bivariado.
+Esta análise será para verificar a correlação entre variáveis
+quantitativas, duas a duas. Trata-se de um método bivariado.
 
 As variáveis quantitativas são:
 
@@ -73,7 +73,7 @@ As variáveis quantitativas são:
 | horas\_trabalhadas |
 | tempo\_empresa     |
 
-Tendo essa informação aplica-se o teste de correlação:
+Tendo essa informação aplica-se o análise de correlação:
 <img src="Relatorio_turnover_Git_files/figure-gfm/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
 Percebe-se que as únicas variáveis que se correlacionam são:
