@@ -1,0 +1,429 @@
+---
+title: "Relatórios Base Tunover"
+author: "Rodrigo Almeida Figueira"
+date: "`r format(Sys.Date(), '%d/%B/%Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+____________________________________________________________________________________________________
+
+
+## Etapas
+
+
+### 1. Entendimento do problema
+### 2. Base de dados
+### 3. Análise Descritiva
+### 4. Análise profunda e modelagem
+### 5. Resultados e Conclusão
+
+
+____________________________________________________________________________________________________
+
+
+### 1. Entendimento do problema
+O demandante está sendo impactado com a perda de funcionários considerados talentos, em especial aqueles com certo tempo de casa. Existe uma base de dados composta de diversos atributos dos funcinários em relação a empresa, inclusive aqueles que foram desligados. Espera-se descobrir onde e se existe relação entre os atributos observados e o desligamento destes funcionários, além de verificar seus níveis de satisfação juntamente com suas perfomances.
+
+
+____________________________________________________________________________________________________
+
+
+### 2. Base de dados
+
+A base de dados conta com 14.999 observações, distibuídas em diversas variáveis como consta na tabela abaixo:
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+
+base_tunover <- read_csv("Case_Turnover_v2.csv")
+
+# nomes das variaveis
+nomes <- base_tunover %>%
+  names() %>%
+    as.data.frame()
+
+colnames(nomes) <- "Variáveis" 
+
+nomes %>%
+  knitr::kable()
+
+```
+
+
+____________________________________________________________________________________________________
+
+
+### 3. Análise Descritiva
+
+Nesta estapa serão feitas as primeiras análises a fim de conhecer e se ambientar à base de dados tunover. Com isso, faremos testes que identificam a influência entre as variáveis de acordo com o nosso objetivo.
+
+
+#### Análise de correlação
+
+Esta análise será para verificar a correlação entre variáveis quantitativas, duas a duas. Trata-se de um método bivariado.
+
+As variáveis quantitativas são:
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+base_tunover <- base_tunover %>%
+  mutate(desligado = as.factor(desligado),
+         licenca_medica = as.factor(licenca_medica),
+         promocao_ultimos_3_anos = as.factor(promocao_ultimos_3_anos))
+
+nomes_quant <- base_tunover %>% 
+  select_if(is.numeric) %>%
+    names() %>%
+    as.data.frame()
+
+colnames(nomes_quant) <- "Variáveis"
+nomes_quant %>% 
+  knitr::kable()
+```
+
+Tendo essa informação aplica-se o análise de correlação:
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.align='center'}
+base_tunover %>% 
+  select_if(is.numeric) %>% 
+    cor() %>% 
+      ggcorrplot::ggcorrplot(hc.order = TRUE, 
+                             type = "lower", 
+                             lab = TRUE, 
+                             lab_size = 3,
+                             tl.cex = 8,
+                             method="circle", 
+                             colors = c("tomato2", "white", "springgreen3"), 
+                             title="Correlograma", 
+                             ggtheme=theme_bw, insig = "blank")
+```
+
+Percebe-se que as únicas variáveis que se correlacionam são:
+
+- Última avaliçao vs Atuação em projetos - Correlação fraca/moderada positiva (r = 0,35): quanto mais atuações em projetos, melhor a última avaliação
+
+- Última avaliação vs Horas Trabalhadas: Correlação fraca/moderada positiva (r = 0,34): quanto mais horas trabalhadas, melhor a última avaliação
+
+- Atuação em projetos vs Horas Trabalhadas: Correlação fraca/moderada positiva (r = 0,42): quanto mais atuações em projetos mais horas trabalhadas
+
+Nenhuma das variáveis quantitativas teve um maior detaque, somente estas com correlações fracas para moderadas. No entanto, percebe-se que há uma tendência de melhora na última avaliação quando se atua mais em projetos e se têm mais horas trabalhadas.
+
+
+#### Teste t (t-student)
+Este teste comparará o grupo de funcinários deligados com aqueles que permanecem na empreas entre difentes variáveis, validando se existe diferença estatística entre eles. Adotou-se um nível descritivo de 5%, o que nos dá uma confiablidade de 95% nas comparações.
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.align='center', fig.dim=c(10,10)}
+library(patchwork)
+library(ggplot2)
+# base para gráficos
+medias <- base_tunover %>% 
+  group_by(desligado) %>% 
+    summarise(media_satisfacao = round(mean(nivel_satisfacao, na.rm = T),2),
+              media_ult_avaliacao = round(mean(ultima_avaliacao, na.rm = T),2),
+              media_atuacao_projetos = round(mean(atuacao_projetos, na.rm = T),2),
+              media_h_trabalho = round(mean(horas_trabalhadas, na.rm = T),2),
+              media_t_empresa = round(mean(tempo_empresa, na.rm = T),2),
+              )
+# media satisfacao
+gg_satisfacao <- medias %>% 
+  ggplot() + 
+    geom_col(aes(x = desligado, y = media_satisfacao), fill = c("#002b80", "blue")) +
+      geom_label(aes(x = desligado, y = media_satisfacao/2, label = media_satisfacao)) +
+        labs(x = "Desligados", y = "Média de Satisfação", subtitle = "p-valor < 0,05")
+
+# media ultima avaliação
+gg_ult_avaliacao <- medias %>% 
+    ggplot() +
+      geom_col(aes(x = desligado, y = media_ult_avaliacao),fill = c("#002b80", "blue")) +
+        geom_label(aes(x = desligado, y = media_ult_avaliacao/2, label = media_ult_avaliacao))+
+          labs(x = "Desligados", y = "Média da última avaliação", subtitle = "p-valor > 0,05")
+
+# media atuação em projetos
+gg_atuacao_projetos <- medias %>% 
+  ggplot() +
+    geom_col(aes(x = desligado, y = media_atuacao_projetos),fill = c("#002b80", "blue")) +
+      geom_label(aes(x = desligado, y = media_atuacao_projetos/2, label = media_atuacao_projetos))+
+        labs(x = "Desligados", y = "Média de atuação em projetos", subtitle = "p-valor < 0,05")
+
+# media horas de trabalho
+gg_h_trabalhos <- medias %>% 
+  ggplot() +
+    geom_col(aes(x = desligado, y = media_h_trabalho),fill = c("#002b80", "blue")) +
+      geom_label(aes(x = desligado, y = media_h_trabalho/2, label = media_h_trabalho))+
+        labs(x = "Desligados", y = "Média de horas trabalhadas", subtitle = "p-valor < 0,05")
+
+# media tempo de empresa
+gg_t_empresa <- medias %>% 
+  ggplot() +
+    geom_col(aes(x = desligado, y = media_t_empresa),fill = c("#002b80", "blue")) +
+      geom_label(aes(x = desligado, y = media_t_empresa/2, label = media_t_empresa)) +
+        labs(x = "Desligados", y = "Média de Tempo na empresa", subtitle = "p-valor < 0,05")
+
+gg_satisfacao + gg_ult_avaliacao + gg_atuacao_projetos +
+gg_h_trabalhos + gg_t_empresa
+
+```
+
+Pode-se perceber que quase todas as variáveis avaliadas acima apresentam diferença significativa (à 95% de confiança) para os grupo de funcinários deligados e não desligados, com exceção da variável ultima avaiação. Com isso defini-se que:
+
+- Os funcionários desligados são menos satisfeitos
+
+- A última avaliação não apresenta diferença estatística entre os grupos de funcionários desligados e não desligados
+
+- Os funcionários desligados atuaram mais em projetos do que os não desligados (o p-valor para esta variável foi de 0,03. Isso nos faz perceber que a um nível descritivo mais rigoroso - 1% ou 2% - esta variável não apresentaria diferença significativa entre os grupos)
+
+- Os funcionários desligados trabaharam mais horas do que os não desligados
+
+- O tempo de empresa dos funcionários desligados é maior do que os não desligados
+
+
+#### Teste Qui-quadrado/ Fisher
+
+Este teste avaliará a infuência das variáveis categóricas (classe) diante do desligamento dos funcionários. Para aquelas variáveis que possuem 2 classes, utilizou-se o teste exato de Fisher.
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.align='center', fig.dim=c(10,10)}
+
+# delisgados vs salario
+gg_salario <- base_tunover %>% 
+  mutate(desligado = ifelse(desligado == "1","Sim", "Não")) %>% 
+    group_by(desligado) %>% 
+      count(salario) %>% 
+  ggplot() +
+    geom_col(aes(x = salario, y = round((n/sum(n))*100,2), fill = desligado)) + #mudar a cor das barras
+      scale_fill_manual(values = c("#002b80", "blue")) +
+        geom_label(aes(x = salario, y = round((n/sum(n))*100,2), label = round((n/sum(n))*100,2)), size = 3) +
+          labs(x = "Salário", y= "Percentual (%)", fill = "Desligamento")
+
+
+# deligados vs setor/area
+gg_area <- base_tunover %>% 
+  mutate(desligado = ifelse(desligado == "1","Sim", "Não")) %>% 
+    group_by(desligado) %>% 
+      count(area) %>% #mudar pra percentual 
+  ggplot() +
+    geom_col(aes(x = area, y = round((n/sum(n))*100,2), fill = desligado)) + 
+      scale_fill_manual(values = c("#002b80", "blue")) +
+        geom_label(aes(x = area, y = round((n/sum(n))*100,2), label = round((n/sum(n))*100,2)), size = 2.3) +
+  labs(x = "Área", y= "Percentual (%)", fill = "Desligamento") +
+  coord_flip()
+
+
+# deligados vs promoção
+gg_promocao <- base_tunover %>% 
+  mutate(desligado = ifelse(desligado == "1","Sim", "Não")) %>% 
+    group_by(desligado) %>% 
+      count(promocao_ultimos_3_anos) %>% 
+  ggplot() +
+    geom_col(aes(x = promocao_ultimos_3_anos, y = round((n/sum(n))*100,2), fill = desligado)) + 
+      scale_fill_manual(values = c("#002b80", "blue")) +
+       geom_label(aes(x = promocao_ultimos_3_anos, y = round((n/sum(n))*100,2), label = round((n/sum(n))*100,2)), size = 3)+
+        labs(x = "Promoção", y= "Percentual (%)", fill = "Desligamento")
+
+# licença médica
+gg_lic_medica <- base_tunover %>% 
+  mutate(desligado = ifelse(desligado == "1","Sim", "Não")) %>% 
+    group_by(desligado) %>% 
+      count(licenca_medica) %>% 
+  ggplot() +
+    geom_col(aes(x = licenca_medica, y = round((n/sum(n))*100,2),fill = desligado)) +
+      scale_fill_manual(values = c("#002b80", "blue")) +
+        geom_label(aes(x = licenca_medica, y = round((n/sum(n))*100,2), label = round((n/sum(n))*100,2)), size = 3)+
+          labs(x = "Licença Médica", y= "Percentual (%)", fill = "Desligamento")
+
+
+gg_salario + gg_area + gg_promocao + gg_lic_medica
+```
+
+Diante das tebelas acima, pode-se notar, com nível descritivo de 5%:
+
+- A maioria dos funcionários desligados possui baixo salário
+
+- Existe diferença estatística entre as áreas quando comparadas ao desligamento dos funcionários
+
+- Aqueles funcionários que foram promovidos nos últimos 3 anos apresentaram menos desligamentos
+
+- Os funcionários que usufruíram de lincença médica apresentaram menos desligamentos
+
+
+____________________________________________________________________________________________________
+
+
+### 4. Análise profunda e modelagem
+
+Nesta etapa, usaremos as pré análises feitas na anteriormente para direcionar nossa análise aprofundada. Aplicaremos um modelo multivariado de regressão logística, para tentar prever o desligamento de um funcionário através do seu comportamento.
+
+#### Regressão Logística
+
+Neste modelo selecionamos a variável independente/preditora como sendo o **deligamento dos funcionários da empresa**. Além disso, separamos 70% da base para treino e 30% para teste do modelo, selecionadas de forma aleatória.
+
+Com a aplicação do modelo para a base de treino temos as seguintes informações:
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.align='center'}
+set.seed(0)
+
+i <- sample(0.7*nrow(base_tunover))
+base_treino <- base_tunover[i,]
+base_teste <- base_tunover[-i,]
+
+reg_log <- base_treino %>% 
+  glm(desligado~., family = binomial(link="logit"), data = .)
+
+modelo_reg_log <- summary(reg_log)
+
+tabela_parametros <- as.data.frame(modelo_reg_log$coefficients)
+
+tabela_parametros<- tabela_parametros %>%
+  mutate(
+    Variaveis = row.names(tabela_parametros),
+    Estimate = round(exp(Estimate),4),
+    `Std. Error` = round(`Std. Error`,2), 
+    `z value` = round(`z value`,2), 
+    `Pr(>|z|)` = round(`Pr(>|z|)`,2),
+    `Razao de Chance (%)` = ifelse(Estimate<1,round((1-Estimate)*100,2),round(100*(Estimate-1),2))
+    )%>%
+    select(Variaveis, Estimate,`Razao de Chance (%)`, `Std. Error`, `z value`, `Pr(>|z|)`)
+
+
+colnames(tabela_parametros) <- c("Variáveis", "Razão de Chance", "Razao de Chance (%)", "Erro Padrão", "Valor de z", "p-valor")
+
+tabela_parametros %>%
+    knitr::kable()
+
+```
+
+Diante das informações acima, pudemos notar que, através do valor de p-valor (Pr(>|z|)), ao nível descritivo de 5%, a única variável que não prediz o desligamento dos funcionários é a *promoção nos últimos 3 anos*. Ao se aplicar um olhar mais rigoroso, com nível descritivo de 1%, além da variável citada anteriormente, a outra variável não preditora seria a *última avaliação*. Contudo faremos a análise da razão de chance de cada variável com oo nível descritivo padrão utilizado nas ténicas anteriores (5%), o que nos dá um nível de 95% de confiança.
+
+A razão de chance nos aponta a relação entre as categorias das variáveis assumindo que todas as outras são constantes. Sendo assim, temos:
+
+- A cada unidade a menos do nível de satisfação, aumenta-se em 0,98 (98%) vezes a chance de desligamento
+
+- A cada unidade a mais na última avaliação, aumenta-se em 1,60 (60%) vezes a chance de desligamento
+
+- Quanto menos atuaçao em projetos, há 0,3 (30%) mais chance de desligamento
+
+- Quanto mais horas trabahadas, há 0,0035 (0,35%) mais chances de desligamento
+
+- Quanto mais tempo de empresa tem o funcionário, cresce em 1,9 (95%) as chaces de desligamento
+
+- Aqueles que não usufruíram de licença médica possuem 0,78 (78%) mais chances de desligamento
+
+- A aréa de celulas é a que apresenta menos chances de desligamento e será a referência para avaliar as outras áreas:
+
+*Área comercial possui 1,89 (89%) mais chances de desligamento*
+
+*Área de executivos possui 1,75 (75%) mais chances de desligamento*
+
+*Área financeira possui 1,56 (56%) mais chsnces de desligamento*
+
+*Área de marketing possui 1,76 (76%) mais chances de desligamento*
+
+*Área médica possui 1,75 (75%) mais chances de desligamento*
+
+*Área de pessoas possui 1,66 (66%) mais chances de desligamento*
+
+*Área de produtos ac possui 1,70 (70%) mais chances de desligamento*
+
+*Área de supply possui 1,81 (81%) mais chances de desligamento*
+
+*Área de TI possui 1,64 (64%) mais chances de desligamento*
+
+- Aqueles funcionários que apresentam salários altos são os que possuem menos chance de desligamento e servirão de referência para avaliar os outros níveis de salário:
+
+*Os funcionários que possuem salário baixo, têm 5,89 (489%) mais chances de desligamento*
+
+*Os funcionários que possuem salário médio, têm 3,76 (276%) mais chances de desligamento*
+
+
+De acordo com as informações acima, aplicaremos o modelo preditivo para verificar a precisão das nossas afirmações.
+
+A aplicação para a base de teste gera uma matriz de confusão:
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+predicao <- base_teste %>%
+  predict(reg_log, newdata = ., type = 'response')
+
+comparacao <- base_teste %>% 
+  select(desligado) %>% 
+    mutate(
+      predito = predicao,
+      resultado = ifelse(predito>0.3,1,0)
+    )
+
+
+m_confuso <- table(comparacao$desligado,comparacao$resultado)
+m_confuso %>%
+  knitr::kable()
+
+p1 <- sum(diag(m_confuso))/sum(m_confuso)
+
+```
+
+De acordo com a matriz de confusão acima, pode-se perceber que o modelo possui boa precisão, igual a **70%**. Isso se deve ao fato de adotar o ponto de corte probabilístico de 0,3 de probabilidade de ser desliado. Ou seja, quando um funcionário apresenta mais que 0,3 de probabilidade de desligamento, já existem fortes tendências dessa corrência.
+
+Agora será aplicado o modelo para a base de produção. Neste caso, utilizaremos a base completa;
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+predicao_base_completa <- base_tunover %>% 
+  predict(reg_log, newdata = ., type = 'response')
+
+comparacao_base_completa <- base_tunover %>% 
+  select(desligado) %>% 
+    mutate(
+      predito = predicao_base_completa,
+      resultado = ifelse(predito>0.3,1,0)
+    )
+m_confusao_completa <- table(comparacao_base_completa$desligado,comparacao_base_completa$resultado)
+m_confusao_completa %>%
+  knitr::kable()
+
+p2 <- sum(diag(m_confusao_completa))/sum(m_confusao_completa)
+
+```
+
+Quando o modelo é aplicado à base de produção, sua precisão cresce para **79%**, adotando os mesmos critérios para a aplicação na base de teste
+
+
+### 5. Resultados e Conclusão
+
+Diante das informações extraídas das análises acima, podemos concluir e direcionar a empresa em relação aos atributos que foram avaliados. Com isso, temos o seguinte direcionamento:
+
+#### Resultados
+
+##### Descritivos
+
+- A empresa possui uma tendência a avaliar positivamente aqueles funcionários que atuam mais em projetos e trabalham mais horas, porém a última avaliação não influencia diretamente no desligamento dos funcionários
+  
+- Os funcionários deligados trabalharam mais horas e possuem mais tempo de empresa
+
+- Os funcionários com alto salário, da área de celulas, com promoção nos últimos 3 anos, apresentaram menos desligamentos
+
+
+##### Preditivos
+
+- Os funcionários menos satisfeitos possuem mais chances de desligamento
+
+- A última avaliação, até certo ponto, quanto mais alta, aumenta as chances de desligamento
+
+- Os funcionários que atuam menos em projetos possuem mais chances de desligamento
+
+- Os funionários que trabalham mais horas, possuem mais chances de desligamento
+
+- Aqueles que não usufruíram de licença médica possuem mais chances de desligamento
+
+- A promoção ou não nos últimos 3 anos não apresenta riscos ao desligamento
+
+- As áreas comercial e supply são as que apresentam mais risco de desligamento quando comparadas a área de celulas, que é a que apresenta menor risco
+
+- Os funcionários com salários baixos e médios apresentam muito mais chances de desligamento quando comparados aqueles com salários altos
+  
+#### Conclusão
+
+A empresa deve atentar para o perfil de desligamento dos funcionários, visto que esta tende a valorizar aqueles que **trabalham mais horas** e **atuam mais em projetos**, sendo o primeiro um efeito que impulsiona o desligamento dos funcionários enquanto segundo não é primordial para a mesma ocorrência. 
+
+Outro ponto a se destacar é o **nível de satisfação** dos funcionários, que quando negativo, traz grande risco de desligamento dos mesmos. Isto pode-se dar devido a área em que o funcionário trabalha ter **baixos salários** e já estar há muito tempo na empresa trabalhando nesta mesma área, visto que o **tempo de empresa** impulsiona o desligamento (quanto mais tempo de empresa maior a chance de desligamento).
+
+Além disso, deve-se destacar se estão sendo cumpridos os direitos em relação a **lincença médica**, visto que aqueles que não usufruíram da mesma, possuem mais chances de desligamento.
+
+#### Próximos passos
+
+Executar o modelo preditivo para a base de funcionários atual e tratar os atributos que possuem destaque a fim da empresa não ser impactada com a perda de talentos. Além disso, a empresa deve revisar seu método de avaliação, visto que o mesmo influencia negativamente na permanência dos funcionários.
