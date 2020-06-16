@@ -3,23 +3,24 @@ Relatórios Base Tunover
 Rodrigo Almeida Figueira
 11/06/2020
 
+  - [Entendimento do problema](#entendimento-do-problema)
+  - [Base de dados](#base-de-dados)
+  - [Análise Descritiva](#análise-descritiva)
+      - [Análise de correlação](#análise-de-correlação)
+      - [Teste t (t-student)](#teste-t-t-student)
+      - [Teste Qui-quadrado/ Fisher](#teste-qui-quadrado-fisher)
+  - [Análise profunda e modelagem](#análise-profunda-e-modelagem)
+      - [Regressão Logística](#regressão-logística)
+  - [Resultados e Conclusão](#resultados-e-conclusão)
+      - [Resultados](#resultados)
+          - [Descritivos](#descritivos)
+          - [Preditivos](#preditivos)
+          - [Conclusão](#conclusão)
+      - [Próximos passos](#próximos-passos)
+
 -----
 
-## Etapas
-
-### 1\. Entendimento do problema
-
-### 2\. Base de dados
-
-### 3\. Análise Descritiva
-
-### 4\. Análise profunda e modelagem
-
-### 5\. Resultados e Conclusão
-
------
-
-### 1\. Entendimento do problema
+# Entendimento do problema
 
 O demandante está sendo impactado com a perda de funcionários
 considerados talentos, em especial aqueles com certo tempo de casa.
@@ -31,7 +32,7 @@ satisfação juntamente com suas perfomances.
 
 -----
 
-### 2\. Base de dados
+# Base de dados
 
 A base de dados conta com 14.999 observações, distibuídas em diversas
 variáveis como consta na tabela abaixo:
@@ -51,14 +52,14 @@ variáveis como consta na tabela abaixo:
 
 -----
 
-### 3\. Análise Descritiva
+# Análise Descritiva
 
 Nesta estapa serão feitas as primeiras análises a fim de conhecer e se
 ambientar à base de dados tunover. Com isso, faremos testes que
 identificam a influência entre as variáveis de acordo com o nosso
 objetivo.
 
-#### Análise de correlação
+## Análise de correlação
 
 Esta análise será para verificar a correlação entre variáveis
 quantitativas, duas a duas. Trata-se de um método bivariado.
@@ -95,7 +96,7 @@ com correlações fracas para moderadas. No entanto, percebe-se que há uma
 tendência de melhora na última avaliação quando se atua mais em projetos
 e se têm mais horas trabalhadas.
 
-#### Teste t (t-student)
+## Teste t (t-student)
 
 Este teste comparará o grupo de funcinários deligados com aqueles que
 permanecem na empreas entre difentes variáveis, validando se existe
@@ -125,7 +126,7 @@ avaiação. Com isso defini-se que:
   - O tempo de empresa dos funcionários desligados é maior do que os não
     desligados
 
-#### Teste Qui-quadrado/ Fisher
+## Teste Qui-quadrado/ Fisher
 
 Este teste avaliará a infuência das variáveis categóricas (classe)
 diante do desligamento dos funcionários. Para aquelas variáveis que
@@ -148,7 +149,7 @@ Diante das tebelas acima, pode-se notar, com nível descritivo de 5%:
 
 -----
 
-### 4\. Análise profunda e modelagem
+# Análise profunda e modelagem
 
 Nesta etapa, usaremos as pré análises feitas na anteriormente para
 direcionar nossa análise aprofundada. Aplicaremos um modelo multivariado
@@ -275,15 +276,15 @@ utilizaremos a base completa;
 Quando o modelo é aplicado à base de produção, sua precisão cresce para
 **79%**, adotando os mesmos critérios para a aplicação na base de teste
 
-### 5\. Resultados e Conclusão
+# Resultados e Conclusão
 
 Diante das informações extraídas das análises acima, podemos concluir e
 direcionar a empresa em relação aos atributos que foram avaliados. Com
 isso, temos o seguinte direcionamento:
 
-#### Resultados
+## Resultados
 
-##### Descritivos
+### Descritivos
 
   - A empresa possui uma tendência a avaliar positivamente aqueles
     funcionários que atuam mais em projetos e trabalham mais horas,
@@ -296,7 +297,7 @@ isso, temos o seguinte direcionamento:
   - Os funcionários com alto salário, da área de celulas, com promoção
     nos últimos 3 anos, apresentaram menos desligamentos
 
-##### Preditivos
+### Preditivos
 
   - Os funcionários menos satisfeitos possuem mais chances de
     desligamento
@@ -323,7 +324,7 @@ isso, temos o seguinte direcionamento:
   - Os funcionários com salários baixos e médios apresentam muito mais
     chances de desligamento quando comparados aqueles com salários altos
 
-#### Conclusão
+### Conclusão
 
 A empresa deve atentar para o perfil de desligamento dos funcionários,
 visto que esta tende a valorizar aqueles que **trabalham mais horas** e
@@ -342,7 +343,7 @@ Além disso, deve-se destacar se estão sendo cumpridos os direitos em
 relação a **lincença médica**, visto que aqueles que não usufruíram da
 mesma, possuem mais chances de desligamento.
 
-#### Próximos passos
+## Próximos passos
 
 Executar o modelo preditivo para a base de funcionários atual e tratar
 os atributos que possuem destaque a fim da empresa não ser impactada com
