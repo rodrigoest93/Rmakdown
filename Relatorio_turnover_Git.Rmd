@@ -2,37 +2,28 @@
 title: "Relatórios Base Tunover"
 author: "Rodrigo Almeida Figueira"
 date: "11/06/2020"
-output: github_document
+output: 
+  github_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-____________________________________________________________________________________________________
-
-
-## Etapas
-
-
-### 1. Entendimento do problema
-### 2. Base de dados
-### 3. Análise Descritiva
-### 4. Análise profunda e modelagem
-### 5. Resultados e Conclusão
-
 
 ____________________________________________________________________________________________________
 
 
-### 1. Entendimento do problema
+# Entendimento do problema
+
 O demandante está sendo impactado com a perda de funcionários considerados talentos, em especial aqueles com certo tempo de casa. Existe uma base de dados composta de diversos atributos dos funcinários em relação a empresa, inclusive aqueles que foram desligados. Espera-se descobrir onde e se existe relação entre os atributos observados e o desligamento destes funcionários, além de verificar seus níveis de satisfação juntamente com suas perfomances.
 
 
 ____________________________________________________________________________________________________
 
 
-### 2. Base de dados
+# Base de dados
 
 A base de dados conta com 14.999 observações, distibuídas em diversas variáveis como consta na tabela abaixo:
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
@@ -56,12 +47,12 @@ nomes %>%
 ____________________________________________________________________________________________________
 
 
-### 3. Análise Descritiva
+# Análise Descritiva
 
 Nesta estapa serão feitas as primeiras análises a fim de conhecer e se ambientar à base de dados tunover. Com isso, faremos testes que identificam a influência entre as variáveis de acordo com o nosso objetivo.
 
 
-#### Análise de correlação
+## Análise de correlação
 
 Esta análise será para verificar a correlação entre variáveis quantitativas, duas a duas. Trata-se de um método bivariado.
 
@@ -110,7 +101,7 @@ Percebe-se que as únicas variáveis que se correlacionam são:
 Nenhuma das variáveis quantitativas teve um maior detaque, somente estas com correlações fracas para moderadas. No entanto, percebe-se que há uma tendência de melhora na última avaliação quando se atua mais em projetos e se têm mais horas trabalhadas.
 
 
-#### Teste t (t-student)
+## Teste t (t-student)
 Este teste comparará o grupo de funcinários deligados com aqueles que permanecem na empreas entre difentes variáveis, validando se existe diferença estatística entre eles. Adotou-se um nível descritivo de 5%, o que nos dá uma confiablidade de 95% nas comparações.
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.align='center', fig.dim=c(10,10)}
@@ -178,7 +169,7 @@ Pode-se perceber que quase todas as variáveis avaliadas acima apresentam difere
 - O tempo de empresa dos funcionários desligados é maior do que os não desligados
 
 
-#### Teste Qui-quadrado/ Fisher
+## Teste Qui-quadrado/ Fisher
 
 Este teste avaliará a infuência das variáveis categóricas (classe) diante do desligamento dos funcionários. Para aquelas variáveis que possuem 2 classes, utilizou-se o teste exato de Fisher.
 
@@ -249,7 +240,7 @@ Diante das tebelas acima, pode-se notar, com nível descritivo de 5%:
 ____________________________________________________________________________________________________
 
 
-### 4. Análise profunda e modelagem
+# Análise profunda e modelagem
 
 Nesta etapa, usaremos as pré análises feitas na anteriormente para direcionar nossa análise aprofundada. Aplicaremos um modelo multivariado de regressão logística, para tentar prever o desligamento de um funcionário através do seu comportamento.
 
@@ -383,13 +374,13 @@ p2 <- sum(diag(m_confusao_completa))/sum(m_confusao_completa)
 Quando o modelo é aplicado à base de produção, sua precisão cresce para **79%**, adotando os mesmos critérios para a aplicação na base de teste
 
 
-### 5. Resultados e Conclusão
+# Resultados e Conclusão
 
 Diante das informações extraídas das análises acima, podemos concluir e direcionar a empresa em relação aos atributos que foram avaliados. Com isso, temos o seguinte direcionamento:
 
-#### Resultados
+## Resultados
 
-##### Descritivos
+### Descritivos
 
 - A empresa possui uma tendência a avaliar positivamente aqueles funcionários que atuam mais em projetos e trabalham mais horas, porém a última avaliação não influencia diretamente no desligamento dos funcionários
   
@@ -398,7 +389,7 @@ Diante das informações extraídas das análises acima, podemos concluir e dire
 - Os funcionários com alto salário, da área de celulas, com promoção nos últimos 3 anos, apresentaram menos desligamentos
 
 
-##### Preditivos
+### Preditivos
 
 - Os funcionários menos satisfeitos possuem mais chances de desligamento
 
@@ -416,7 +407,7 @@ Diante das informações extraídas das análises acima, podemos concluir e dire
 
 - Os funcionários com salários baixos e médios apresentam muito mais chances de desligamento quando comparados aqueles com salários altos
   
-#### Conclusão
+### Conclusão
 
 A empresa deve atentar para o perfil de desligamento dos funcionários, visto que esta tende a valorizar aqueles que **trabalham mais horas** e **atuam mais em projetos**, sendo o primeiro um efeito que impulsiona o desligamento dos funcionários enquanto segundo não é primordial para a mesma ocorrência. 
 
@@ -424,6 +415,6 @@ Outro ponto a se destacar é o **nível de satisfação** dos funcionários, que
 
 Além disso, deve-se destacar se estão sendo cumpridos os direitos em relação a **lincença médica**, visto que aqueles que não usufruíram da mesma, possuem mais chances de desligamento.
 
-#### Próximos passos
+## Próximos passos
 
 Executar o modelo preditivo para a base de funcionários atual e tratar os atributos que possuem destaque a fim da empresa não ser impactada com a perda de talentos. Além disso, a empresa deve revisar seu método de avaliação, visto que o mesmo influencia negativamente na permanência dos funcionários.
